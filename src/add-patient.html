@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareAfter – Add Patient</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/careafter.css" />
+</head>
+<body>
+  <div class="app-container app-wide">
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">🏥</div>
+        <div>
+          <h1>Add Patient</h1>
+          <p class="tagline">Discharge intake + prescription scan</p>
+        </div>
+      </div>
+      <div class="top-nav">
+        <a href="/">CareAfter Portal</a>
+        <a href="./dashboard.html">Dashboard</a>
+      </div>
+    </header>
+
+    <main class="main-card">
+      <form class="form-stack" id="patientForm">
+        <div class="form-field">
+          <label for="patientName">Patient name</label>
+          <input id="patientName" name="name" type="text" required />
+        </div>
+        <div class="form-field">
+          <label for="whatsapp">Email address</label>
+          <input id="whatsapp" name="email" type="email" required placeholder="e.g. sanahmerlinb.s2029@cs.ajce.in" />
+        </div>
+        <div class="form-field">
+          <label for="diagnosis">Diagnosis</label>
+          <textarea id="diagnosis" name="diagnosis" required placeholder="e.g. Post-op appendectomy, pneumonia"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Risk factors</label>
+          <div class="check-row">
+            <label><input type="checkbox" name="risk" value="elderly" /> Elderly</label>
+            <label><input type="checkbox" name="risk" value="diabetic" /> Diabetic</label>
+            <label><input type="checkbox" name="risk" value="heart condition" /> Heart condition</label>
+          </div>
+          <input id="riskOther" type="text" placeholder="Other risk factors (optional)" style="margin-top:0.5rem" />
+        </div>
+
+        <div class="form-field">
+          <label>Discharge prescription photo</label>
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="imageInput" accept="image/*" capture="environment" class="file-input-hidden" />
+            <div class="dropzone-content" id="dropzonePrompt">
+              <div class="upload-icon-wrapper">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+              </div>
+              <h3>Upload or Snap Prescription</h3>
+              <p>Take a photo or drag & drop the discharge prescription</p>
+              <div class="button-group">
+                <button type="button" class="btn btn-secondary" id="browseBtn">Select Image / Camera</button>
+              </div>
+            </div>
+            <div class="preview-container hidden" id="previewContainer">
+              <img id="imagePreview" alt="Prescription preview" />
+              <button type="button" class="btn-remove" id="removeImgBtn" title="Remove image">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-box hidden" id="errorBox">
+          <div class="error-icon">⚠️</div>
+          <div class="error-msg" id="errorMessage"></div>
+        </div>
+        <div class="success-box hidden" id="successBox"></div>
+        <section class="loading-state hidden" id="loadingState">
+          <h4>Saving patient & generating check-in questions...</h4>
+          <p>Scanning prescription with the existing DoodleDoc analyzer</p>
+        </section>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Add patient</button>
+      </form>
+    </main>
+  </div>
+  <script type="module" src="/src/add-patient.js"></script>
+</body>
+</html>

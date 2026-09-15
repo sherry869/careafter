@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareAfter – Staff Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/careafter.css" />
+</head>
+<body>
+  <div class="app-container app-wide">
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">🏥</div>
+        <div>
+          <h1>CareAfter</h1>
+          <p class="tagline">Post-discharge patient monitoring</p>
+        </div>
+      </div>
+      <div class="top-nav" id="navAuthed" hidden>
+        <a href="/">CareAfter Portal</a>
+        <a href="./add-patient.html">Add Patient</a>
+        <span class="staff-meta" id="staffMeta"></span>
+        <button type="button" class="btn btn-secondary btn-inline" id="logoutBtn">Log out</button>
+      </div>
+    </header>
+
+    <main class="main-card" id="loginCard">
+      <h3>Staff login</h3>
+      <p class="tagline" style="margin: 0.35rem 0 1rem">Email and password via Supabase Auth. One staff role only.</p>
+      <form class="form-stack" id="loginForm">
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required autocomplete="username" />
+        </div>
+        <div class="form-field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required autocomplete="current-password" minlength="6" />
+        </div>
+        <div class="form-field" id="hospitalField" hidden>
+          <label for="hospitalName">Hospital name (sign up only)</label>
+          <input id="hospitalName" name="hospitalName" type="text" placeholder="e.g. City General" />
+        </div>
+        <div class="error-box hidden" id="errorBox">
+          <div class="error-icon">⚠️</div>
+          <div class="error-msg" id="errorMessage"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginSubmit">Log in</button>
+        <button type="button" class="btn btn-secondary" id="toggleSignup">Need an account? Sign up</button>
+      </form>
+    </main>
+
+    <div id="dashboardView" hidden>
+      <section class="main-card">
+        <h3 class="section-title">Flagged Patients</h3>
+        <div class="patient-list" id="flaggedList"></div>
+      </section>
+      <section class="main-card" style="margin-top: 1rem">
+        <h3 class="section-title">All Patients</h3>
+        <div class="patient-list" id="allList"></div>
+      </section>
+    </div>
+  </div>
+  <script type="module" src="/src/dashboard.js"></script>
+</body>
+</html>

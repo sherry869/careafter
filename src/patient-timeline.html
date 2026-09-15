@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareAfter – Patient Timeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/careafter.css" />
+</head>
+<body>
+  <div class="app-container app-wide">
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">🏥</div>
+        <div>
+          <h1 id="patientTitle">Patient timeline</h1>
+          <p class="tagline" id="patientSub">Check-in history</p>
+        </div>
+      </div>
+      <div class="top-nav">
+        <a href="/">CareAfter Portal</a>
+        <a href="./dashboard.html">Dashboard</a>
+        <a href="./add-patient.html">Add Patient</a>
+      </div>
+    </header>
+
+    <main class="main-card">
+      <div class="error-box hidden" id="errorBox">
+        <div class="error-icon">⚠️</div>
+        <div class="error-msg" id="errorMessage"></div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </main>
+  </div>
+  <script type="module" src="/src/patient-timeline.js"></script>
+</body>
+</html>
