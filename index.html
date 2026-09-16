@@ -240,7 +240,7 @@
             <span>Discharge Prescription OCR & AI Questions</span>
           </div>
           <p class="panel-desc">
-            Upload prescription photo to extract dosage and generate personalized recovery questions.
+            Upload prescription photo to extract all medicines with dosages and generate personalized MCQ recovery questions.
           </p>
 
           <!-- Clean Dropzone -->
@@ -249,36 +249,47 @@
             <div id="dropzoneEmptyState">
               <div style="font-size:2rem; margin-bottom:0.4rem">📄</div>
               <strong style="font-size:0.95rem; color:#fff; display:block">Upload Prescription Photo</strong>
-              <span style="font-size:0.8rem; color:var(--text-secondary); display:block; margin:0.25rem 0 0.85rem">Drag & drop or browse from device</span>
+              <span style="font-size:0.8rem; color:var(--text-secondary); display:block; margin:0.25rem 0 0.85rem">Auto-reads all medicines & exact dosages</span>
               <button type="button" class="btn btn-secondary" id="browsePrescriptionBtn" style="padding:0.45rem 0.9rem; font-size:0.82rem">
                 Select Photo
               </button>
             </div>
             <div class="hidden" id="dropzoneActiveState">
               <img id="prescriptionPreviewImg" style="max-height:160px; border-radius:var(--radius-md); border:1px solid var(--surface-border)" alt="Prescription" />
-              <div style="margin-top:0.5rem">
+              <div style="margin-top:0.5rem; display:flex; gap:0.5rem; justify-content:center; align-items:center">
+                <button type="button" class="btn btn-primary" id="scanPrescriptionNowBtn" style="padding:0.35rem 0.75rem; font-size:0.78rem">
+                  ⚡ Re-Scan Prescription
+                </button>
                 <button type="button" class="btn btn-secondary" id="removePrescriptionBtn" style="padding:0.35rem 0.75rem; font-size:0.78rem">
-                  Remove Photo
+                  Remove
                 </button>
               </div>
             </div>
           </div>
 
+          <!-- Live Extracted Medications & Dosages Card Container -->
+          <div class="extracted-meds-box hidden" id="intakeExtractedMedsBox">
+            <div class="extracted-meds-header">
+              <strong style="font-size:0.85rem; color:#38bdf8; display:flex; align-items:center; gap:0.35rem">
+                <span>💊</span> <span id="intakeExtractedMedsTitle">Extracted Medicines & Dosages (0 detected)</span>
+              </strong>
+              <span style="font-size:0.75rem; color:var(--text-muted)">OCR & LASA verified</span>
+            </div>
+            <div class="extracted-meds-list" id="intakeExtractedMedsList">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
           <!-- AI Generated Sequence Preview -->
           <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem">
-            <label style="font-size:0.78rem; font-weight:700; text-transform:uppercase; color:var(--text-secondary)">
-              Automated Check-in Sequence Preview
-            </label>
-            <div id="aiQuestionsPreviewList" style="display:flex; flex-direction:column; gap:0.5rem">
-              <div style="background:rgba(8,12,20,0.6); border:1px solid var(--surface-border); padding:0.65rem 0.85rem; border-radius:var(--radius-md); font-size:0.85rem">
-                <strong style="color:#38bdf8">Day 1:</strong> "How is your surgical incision feeling? Any abnormal redness or warmth?"
-              </div>
-              <div style="background:rgba(8,12,20,0.6); border:1px solid var(--surface-border); padding:0.65rem 0.85rem; border-radius:var(--radius-md); font-size:0.85rem">
-                <strong style="color:#38bdf8">Day 2:</strong> "Have you checked your temperature? Any fever above 100.4°F or chills?"
-              </div>
-              <div style="background:rgba(8,12,20,0.6); border:1px solid var(--surface-border); padding:0.65rem 0.85rem; border-radius:var(--radius-md); font-size:0.85rem">
-                <strong style="color:#38bdf8">Day 3:</strong> "Have you been taking your prescribed medications with food?"
-              </div>
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <label style="font-size:0.78rem; font-weight:700; text-transform:uppercase; color:var(--text-secondary)">
+                Personalized MCQ Check-in Sequence Preview
+              </label>
+              <span style="font-size:0.72rem; color:#34d399; font-weight:600">4-Option MCQ Format</span>
+            </div>
+            <div id="aiQuestionsPreviewList" style="display:flex; flex-direction:column; gap:0.6rem">
+              <!-- Rendered dynamically -->
             </div>
           </div>
         </div>
@@ -336,32 +347,41 @@
           <div class="triage-sandbox-card">
             <div class="panel-title" style="color:#34d399">
               <span>⚡</span>
-              <span>Clinical AI Triage & Report Sandbox</span>
+              <span>Clinical AI MCQ Triage Sandbox</span>
             </div>
             <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.4">
-              Simulate an incoming patient response to test Gemini AI clinical triage and automated patient reporting.
+              Simulate patient MCQ option selection to test Gemini AI clinical triage and automated recovery reporting.
             </p>
 
             <form id="sandboxForm" style="display:flex; flex-direction:column; gap:0.75rem">
               <div class="form-field">
-                <label for="sbQuestion">Check-in Question</label>
-                <input id="sbQuestion" type="text" value="How is your surgical incision and pain level today?" required />
+                <label for="sbQuestionSelect">Select Check-in MCQ Question</label>
+                <select id="sbQuestionSelect" style="background:rgba(8,12,20,0.85); color:#fff; border:1px solid var(--surface-border); padding:0.5rem 0.75rem; border-radius:var(--radius-md); font-family:inherit; font-size:0.82rem; width:100%">
+                </select>
               </div>
 
               <div class="form-field">
-                <label for="sbAnswer">Simulate Patient Reply</label>
-                <textarea id="sbAnswer" rows="3" placeholder="Type a simulated patient message..." required></textarea>
+                <label>Select Patient MCQ Choice (Instant 1-Click Select)</label>
+                <div class="mcq-sandbox-selector" id="sbMcqOptionsContainer">
+                  <!-- Rendered dynamically based on selected question -->
+                </div>
               </div>
 
-              <!-- Quick Presets -->
-              <div style="display:flex; gap:0.35rem; flex-wrap:wrap">
-                <button type="button" class="btn btn-secondary" id="presetNormalBtn" style="padding:0.25rem 0.6rem; font-size:0.76rem">🟢 Normal</button>
-                <button type="button" class="btn btn-secondary" id="presetConcernBtn" style="padding:0.25rem 0.6rem; font-size:0.76rem">🟡 Concern</button>
-                <button type="button" class="btn btn-secondary" id="presetUrgentBtn" style="padding:0.25rem 0.6rem; font-size:0.76rem">🔴 Urgent Fever</button>
+              <div class="form-field">
+                <label for="sbCustomNote">Optional Patient Note / Comment</label>
+                <input id="sbCustomNote" type="text" placeholder="e.g. Taking meds on time, feeling much better" />
               </div>
 
-              <button type="submit" class="btn btn-primary" id="sbSubmitBtn" style="margin-top:0.25rem">
-                Assess Reply with Gemini AI
+              <!-- Quick Urgency Presets -->
+              <div style="display:flex; gap:0.35rem; flex-wrap:wrap; align-items:center">
+                <span style="font-size:0.72rem; color:var(--text-muted); margin-right:0.2rem">PRESETS:</span>
+                <button type="button" class="btn btn-secondary" id="presetNormalBtn" style="padding:0.25rem 0.6rem; font-size:0.76rem">🟢 Normal (Opt A)</button>
+                <button type="button" class="btn btn-secondary" id="presetConcernBtn" style="padding:0.25rem 0.6rem; font-size:0.76rem">🟡 Concern (Opt C)</button>
+                <button type="button" class="btn btn-secondary" id="presetUrgentBtn" style="padding:0.25rem 0.6rem; font-size:0.76rem">🔴 Urgent Complication (Opt D)</button>
+              </div>
+
+              <button type="submit" class="btn btn-primary" id="sbSubmitBtn" style="margin-top:0.35rem">
+                Assess MCQ Response with Gemini AI
               </button>
             </form>
           </div>
@@ -369,9 +389,9 @@
           <!-- Prescribed Medications -->
           <div class="intake-panel-card" style="padding:1.25rem">
             <strong style="font-size:0.85rem; text-transform:uppercase; color:var(--text-secondary); margin-bottom:0.5rem; display:block">
-              Prescribed Medications
+              Prescribed Medications & Dosages
             </strong>
-            <div id="tlMedsList" style="display:flex; flex-direction:column; gap:0.4rem"></div>
+            <div id="tlMedsList" style="display:flex; flex-direction:column; gap:0.5rem"></div>
           </div>
 
         </div>

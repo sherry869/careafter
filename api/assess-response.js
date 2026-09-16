@@ -29,18 +29,66 @@ export default async function handler(req, res) {
     if (!patient) return json(res, 404, { error: 'Patient not found.' });
 
     const condition = `${patient.diagnosis || 'unspecified'}${patient.risk_factors ? `; risk factors: ${patient.risk_factors}` : ''}`;
-    const prompt = `Given this patient's condition: [${condition}] and their check-in answer: [question: ${question}; answer: ${answer}], assess urgency as one of: normal, concern, urgent. If concern or urgent, provide one sentence of advice for the patient. Return ONLY valid JSON: {"urgency": "", "advice": ""}`;
+    const ansStr = String(answer).trim();
 
-    let urgency = 'normal';
-    let advice = '';
+    // Fast deterministic heuristic for direct MCQ option letters
+    let heuristicUrgency = null;
+    let heuristicAdvice = '';
+    const upper = ansStr.toUpperCase();
+
+    if (/^(D\b|OPTION\s*D|4\s*:\s*D)/i.test(ansStr) || ansStr.includes('Option D') || upper.startsWith('D)') || ansStr.includes('D)')) {
+      heuristicUrgency = 'urgent';
+      heuristicAdvice = 'Patient reported severe red-flag complication symptoms (Option D). Immediate nurse clinical triage & attending physician notification required.';
+    } else if (/^(C\b|OPTION\s*C|3\s*:\s*C)/i.test(ansStr) || ansStr.includes('Option C') || upper.startsWith('C)') || ansStr.includes('C)')) {
+      heuristicUrgency = 'concern';
+      heuristicAdvice = 'Patient reported moderate recovery discomfort (Option C). Attending nurse phone check-in advised within 2-4 hours.';
+    } else if (/^(A\b|B\b|OPTION\s*[AB]|1\s*:\s*[AB]|2\s*:\s*[AB])/i.test(ansStr) || ansStr.includes('Option A') || ansStr.includes('Option B')) {
+      heuristicUrgency = 'normal';
+      heuristicAdvice = 'Patient reported healthy recovery progression (Option A/B). Continue prescribed medication and routine monitoring.';
+    }
+
+    const prompt = `You are a clinical nurse specialist reviewing a post-discharge patient's MCQ check-in response.
+Patient Condition & Risk Factors: [${condition}]
+Check-in Question: [${question}]
+Patient MCQ Selection / Response: "${ansStr}"
+
+Instructions:
+- If the patient chose Option D or reported red-flag symptoms (severe chest pain, high fever > 100.4F, bleeding, unable to breathe/swallow/eat, persistent vomiting), urgency MUST be "urgent".
+- If the patient chose Option C or reported moderate worsening symptoms (increasing pain, missed doses, nausea), urgency is "concern".
+- If the patient chose Option A or B (normal recovery, mild manageable discomfort, taking meds), urgency is "normal".
+
+Assess the response and return ONLY valid JSON:
+{
+  "urgency": "normal" | "concern" | "urgent",
+  "advice": "1 concise sentence with clinical action for nurse or reassurance for patient"
+}`;
+
+    let urgency = heuristicUrgency || 'normal';
+    let advice = heuristicAdvice || '';
     try {
       const parsed = await geminiJson(prompt);
-      const raw = String(parsed?.urgency || 'normal').toLowerCase();
-      urgency = raw === 'urgent' || raw === 'concern' ? raw : 'normal';
-      advice = typeof parsed?.advice === 'string' ? parsed.advice.trim() : '';
-      if (urgency === 'normal') advice = advice || '';
+      const raw = String(parsed?.urgency || '').toLowerCase();
+      if (raw === 'urgent' || raw === 'concern' || raw === 'normal') {
+        urgency = raw;
+      }
+      if (typeof parsed?.advice === 'string' && parsed.advice.trim()) {
+        advice = parsed.advice.trim();
+      }
     } catch (err) {
       console.warn('assess-response Gemini fallback:', err.message);
+      if (!heuristicUrgency) {
+        const lower = ansStr.toLowerCase();
+        if (lower.includes('chest') || lower.includes('fever') || lower.includes('bleeding') || lower.includes('breath') || lower.includes('vomit') || lower.includes('severe') || lower.includes('pus')) {
+          urgency = 'urgent';
+          advice = 'Urgent post-op or cardiac symptoms detected. Contact patient immediately.';
+        } else if (lower.includes('dizzy') || lower.includes('pain') || lower.includes('nausea') || lower.includes('missed') || lower.includes('swelling')) {
+          urgency = 'concern';
+          advice = 'Moderate symptoms reported. Follow-up phone check advised.';
+        } else {
+          urgency = 'normal';
+          advice = 'Patient reports recovery within expected parameters.';
+        }
+      }
     }
 
     const { data: saved, error: saveError } = await supabase

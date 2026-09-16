@@ -89,7 +89,10 @@ function normalizePrescriptionData(parsed) {
   const emptyMedicine = {
     drug_name: 'Not detected',
     strength: 'N/A',
+    dosage: 'N/A',
     frequency: 'N/A',
+    timing: 'N/A',
+    duration: 'N/A',
     plain_instructions: 'Unable to parse medication instructions from the image.',
     similar_drugs: []
   };
@@ -125,9 +128,9 @@ function normalizePrescriptionData(parsed) {
     .filter((med) => med && typeof med === 'object')
     .map((med) => {
       const name = med.drug_name || med.brand_name || med.name || med.medicine_name || med.drug || '';
-      const str = med.strength || med.dose || med.dosage || '';
+      const str = med.strength || med.dose || med.dosage || med.potency || '';
 
-      let freq = med.frequency || '';
+      let freq = med.frequency || med.dosage_frequency || '';
       if (med.dosing_instructions && typeof med.dosing_instructions === 'object') {
         const parts = [];
         if (med.dosing_instructions.dose) parts.push(med.dosing_instructions.dose);
@@ -138,12 +141,13 @@ function normalizePrescriptionData(parsed) {
         if (parts.length > 0) freq = parts.join(' | ');
       }
 
-      const timing = med.timing || med.when_to_take || '';
-      const duration = med.duration || '';
+      const timing = med.timing || med.when_to_take || med.meal_relation || '';
+      const duration = med.duration || med.course || '';
       const instructions =
         med.plain_instructions ||
         med.plain_english_summary ||
         med.instructions ||
+        med.patient_instructions ||
         med.summary ||
         '';
 
@@ -155,7 +159,10 @@ function normalizePrescriptionData(parsed) {
       return {
         drug_name: name,
         strength: str || 'As prescribed',
+        dosage: str || 'As prescribed',
         frequency: freq || 'As prescribed',
+        timing: timing || 'As directed',
+        duration: duration || 'As prescribed',
         plain_instructions:
           combinedInstructions ||
           'Please verify dosage instructions with your physician or pharmacist.',
@@ -171,7 +178,10 @@ function normalizePrescriptionData(parsed) {
       ...emptyMedicine,
       drug_name: parsed.drug_name || 'Unspecified / Not clearly legible',
       strength: parsed.strength || 'As prescribed',
+      dosage: parsed.strength || 'As prescribed',
       frequency: parsed.frequency || 'As prescribed',
+      timing: parsed.timing || 'As directed',
+      duration: parsed.duration || 'As prescribed',
       plain_instructions:
         parsed.plain_instructions ||
         parsed.instructions ||
@@ -232,12 +242,13 @@ export default async function handler(req, res) {
       base64Data = parts[1];
     }
 
-    const systemInstructionText = `You are an expert clinical pharmacist, physician, and medical OCR specialist. Your PRIMARY goal is to identify EVERY medicine written on the prescription image — however many there are (often 3–4 on one slip). Do not stop after the first drug. Extract all distinct medicines visible (handwritten doctor notes, printed clinic Rx slips, hospital discharge summaries, blister packs, strips, boxes, bottles).
+    const systemInstructionText = `You are an expert clinical pharmacist, physician, and medical OCR specialist. Your PRIMARY goal is to identify EVERY medicine and its EXACT DOSAGE written on the prescription image — however many there are (often 2 to 6 on one slip). Do not stop after the first drug. Extract all distinct medicines visible (handwritten doctor notes, printed clinic Rx slips, hospital discharge summaries, blister packs, strips, boxes, bottles).
 
-Prescriptions often feature fast, cursive doctor handwriting, faint pen strokes, Latin abbreviations, and shorthand. Use your clinical domain knowledge of medicine brand names, generic formulations, standard medical dosages, and prescription shorthand to decipher each line item.
+Prescriptions often feature fast cursive doctor handwriting, faint pen strokes, Latin abbreviations, and shorthand. Use your clinical domain knowledge of medicine brand names, generic formulations, standard medical dosages, and prescription shorthand to decipher each line item.
 
 Key Medical Shorthand Guide:
 - Dosage Forms: Tab (Tablet), Cap (Capsule), Syp/Susp (Syrup/Suspension), Inj (Injection), Oint/Gel (Ointment), Drops, Inhaler.
+- Strength / Dosage: Extract exact numerical strengths (e.g. 500 mg, 625 mg, 1 g, 40 mg, 10 ml, 2 puffs, 5 mcg).
 - Frequency & Notation:
   - 1-0-0 / 0-1-0 / 0-0-1 / 1 OD / OD: Once daily (specify morning, afternoon, or night).
   - 1-0-1 / 0-1-1 / 1-1-0 / BD / BID: Twice daily (e.g., morning and night).
@@ -251,27 +262,29 @@ Key Medical Shorthand Guide:
   - PC / AF: After meals / after food.
   - CC: With meals.
 - Duration:
-  - x 3d, x 5d, 5/7 (5 days), 2/52 (2 weeks), 1/12 (1 month).
+  - x 3d, x 5d, 5/7 (5 days), 2/52 (2 weeks), 1/12 (1 month), 30 days.
 
-similar_drugs (IMPORTANT — this is NOT look-alike / sound-alike name confusion):
-For EACH extracted medicine, list 2–3 other commercially available brand names that contain the SAME active ingredient / same generic salt / same composition (therapeutic equivalents / generic alternatives), different brand name only. Example: if the Rx says Crocin, similar_drugs might be ["Dolo", "Calpol", "Paracip"] because they share paracetamol — NOT names that merely look or sound similar. Do not list LASA confusable names here.
+similar_drugs (IMPORTANT — generic alternatives sharing the exact same composition):
+For EACH extracted medicine, list 2–3 other commercially available brand names that contain the SAME active ingredient / same generic salt / same composition (therapeutic equivalents / generic alternatives), different brand name only. Example: if the Rx says Crocin, similar_drugs might be ["Dolo 650", "Calpol 650", "Paracip"] because they share paracetamol — NOT names that merely look or sound similar.
 
 Output Format:
-You MUST respond with a JSON object. Even if only ONE medicine is visible, still return a medicines array with one item:
+You MUST respond with a JSON object. Even if only ONE medicine is visible, still return a medicines array:
 {
   "medicines": [
     {
-      "drug_name": "Brand name or name as written (e.g., Augmentin, Dolo 650, Pan-D)",
-      "strength": "e.g., 625 mg",
-      "frequency": "e.g., Twice daily (1-0-1) after food for 5 days",
-      "plain_instructions": "Clear patient directions for this specific medicine, including timing, duration, and precautions.",
-      "similar_drugs": ["Brand with same salt 1", "Brand with same salt 2", "Brand with same salt 3"]
+      "drug_name": "Brand name or generic name as written (e.g., Augmentin, Dolo 650, Pan-D, Pantoprazole)",
+      "strength": "Exact dosage/strength (e.g., 625 mg, 40 mg, 1 g)",
+      "frequency": "Frequency schedule (e.g., Twice daily 1-0-1, Once daily OD)",
+      "timing": "Meal relation (e.g., After food, 30 mins before breakfast on empty stomach)",
+      "duration": "Duration of course (e.g., 5 days, 14 days, Continue as maintenance)",
+      "plain_instructions": "Clear, patient-friendly directions for this specific medicine including dosage, timing, with/without food, and precautions.",
+      "similar_drugs": ["Brand with same salt 1", "Brand with same salt 2"]
     }
   ],
   "raw_text": "Verbatim transcript of all handwritten notes and printed text found in the image."
 }
 
-If any handwriting is difficult to read, use surrounding clinical context to deduce the most probable medication, and explain any uncertainties in that medicine's plain_instructions rather than omitting the medicine from the array.`;
+If any handwriting is difficult to read, use surrounding clinical context to deduce the most probable medication, and explain any uncertainties in that medicine's plain_instructions rather than omitting the medicine from the array. Extract all lines.`;
 
     const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 

@@ -7,26 +7,42 @@ const GEMINI_MODEL = 'gemini-3.6-flash';
 
 async function generateAIClinicalAssessment(patient, responseText) {
   const apiKey = process.env.GEMINI_API_KEY;
+  const upper = String(responseText || '').toUpperCase();
+
+  // Deterministic triage check for clear MCQ choices
+  let initialUrgency = 'normal';
+  if (upper.includes('4: D') || upper.includes('3: D') || upper.includes('2: D') || upper.includes('1: D') || upper.includes('OPTION D') || upper.includes('D)')) {
+    initialUrgency = 'urgent';
+  } else if (upper.includes('4: C') || upper.includes('3: C') || upper.includes('2: C') || upper.includes('1: C') || upper.includes('OPTION C') || upper.includes('C)')) {
+    initialUrgency = 'concern';
+  }
+
   if (!apiKey || apiKey === 'your_key_here') {
     return {
-      urgency: 'normal',
-      clinical_summary: 'Report generated without AI assistance.',
-      recommended_action: 'Standard clinical recovery follow-up.'
+      urgency: initialUrgency,
+      clinical_summary: initialUrgency === 'urgent' ? 'High risk recovery symptoms reported on MCQ check-in.' : 'MCQ check-in report generated within clinical parameters.',
+      recommended_action: initialUrgency === 'urgent' ? 'Urgent nurse phone triage & attending physician review.' : 'Routine monitoring & medication adherence.',
+      vitals_status: initialUrgency === 'urgent' ? 'elevated_risk' : 'stable'
     };
   }
 
-  const prompt = `You are a clinical nurse specialist reviewing a post-discharge patient's email check-in response.
+  const prompt = `You are a clinical nurse specialist reviewing a post-discharge patient's MCQ check-in email response.
 Patient Name: ${patient.name}
 Condition / Diagnosis: ${patient.condition || patient.diagnosis}
 Assigned Unit: ${patient.nurse || 'General Post-Op'}
 Prescribed Meds: ${JSON.stringify(patient.medicines || [])}
-Patient Email Response: "${responseText}"
+Patient Check-in MCQ Response: "${responseText}"
 
-Assess the response and return ONLY valid JSON with:
+Assessment Guidelines:
+- If the patient chose Option D or reported red-flag symptoms (severe chest pain, high fever > 100.4°F, heavy bleeding, severe breathlessness), classify urgency as "urgent" and vitals_status as "critical" or "elevated_risk".
+- If the patient chose Option C or reported moderate worsening symptoms / missed doses, classify urgency as "concern" and vitals_status as "elevated_risk".
+- If the patient chose Option A or B (normal recovery, mild manageable discomfort, full medication compliance), classify urgency as "normal" and vitals_status as "stable".
+
+Return ONLY valid JSON:
 {
   "urgency": "normal" | "concern" | "urgent",
-  "clinical_summary": "1-2 sentences summarizing clinical findings",
-  "recommended_action": "1 action item for attending nurse (e.g. continue monitoring, call patient, schedule cardiology consult)",
+  "clinical_summary": "1-2 sentences summarizing clinical findings from MCQ answers",
+  "recommended_action": "1 concrete action item for attending nurse (e.g. continue monitoring, nurse phone check-in, urgent physician consult)",
   "vitals_status": "stable" | "elevated_risk" | "critical"
 }`;
 
@@ -50,18 +66,26 @@ Assess the response and return ONLY valid JSON with:
     return JSON.parse(cleaned);
   } catch (err) {
     console.warn(`AI Assessment fallback for ${patient.name}:`, err.message);
-    const lower = responseText.toLowerCase();
-    if (lower.includes('chest') || lower.includes('fever') || lower.includes('shortness of breath') || lower.includes('bleeding')) {
+    const lower = String(responseText || '').toLowerCase();
+    if (initialUrgency === 'urgent' || lower.includes('chest') || lower.includes('fever') || lower.includes('shortness of breath') || lower.includes('bleeding')) {
       return {
         urgency: 'urgent',
-        clinical_summary: 'Elevated cardiac or post-op complication symptoms reported.',
+        clinical_summary: 'Elevated complication or red-flag recovery symptoms reported on MCQ check-in.',
         recommended_action: 'Immediate nurse phone triage & attending physician notification.',
+        vitals_status: 'elevated_risk'
+      };
+    }
+    if (initialUrgency === 'concern' || lower.includes('dizzy') || lower.includes('cramp') || lower.includes('missed') || lower.includes('pain')) {
+      return {
+        urgency: 'concern',
+        clinical_summary: 'Moderate recovery discomfort or symptom variation reported on MCQ check-in.',
+        recommended_action: 'Attending nurse phone check-in within 2-4 hours.',
         vitals_status: 'elevated_risk'
       };
     }
     return {
       urgency: 'normal',
-      clinical_summary: 'Patient reports manageable recovery progression.',
+      clinical_summary: 'Patient reports steady recovery progression on MCQ check-in.',
       recommended_action: 'Continue prescribed medications and routine 24h follow-up.',
       vitals_status: 'stable'
     };
@@ -96,7 +120,7 @@ export async function prepareClinicalReport(patientResponses) {
     console.log(`[PATIENT] ${item.patient.name} (${item.patient.email})`);
     console.log(`  Diagnosis: ${item.patient.condition || item.patient.diagnosis}`);
     console.log(`  Triage Level: ${badge}`);
-    console.log(`  Patient Reply: "${item.response}"`);
+    console.log(`  Patient MCQ Reply: "${item.response}"`);
     console.log(`  Clinical Summary: ${assessment.clinical_summary}`);
     console.log(`  Nurse Action: ${assessment.recommended_action}`);
     console.log(`------------------------------------------------------------------------`);
@@ -123,7 +147,7 @@ if (process.argv[1] && process.argv[1].endsWith('prepare-report.js')) {
         condition: 'Gastric issues (Gastritis & Acid Reflux Monitoring)',
         nurse: 'Nurse 1'
       },
-      response: '1. Reflux feels milder today. 2. Yes, took Pantoprazole on empty stomach. 3. No vomiting. 4. Tolerating rice porridge well.'
+      response: '1: A (Normal, no heartburn), 2: A (Taking Pantoprazole and Sucralfate on time), 3: A (No pain or vomiting), 4: A (Eating porridge comfortably)'
     },
     {
       patient: {
@@ -132,7 +156,7 @@ if (process.argv[1] && process.argv[1].endsWith('prepare-report.js')) {
         condition: 'Dental issues (Post-Op Surgical Tooth Extraction)',
         nurse: 'Nurse 2'
       },
-      response: '1. Gum swelling is reduced, slight jaw soreness. 2. Yes, finishing Amoxicillin. 3. No bleeding. 4. Doing salt water rinses as directed.'
+      response: '1: B (Mild soreness, well controlled), 2: A (Finished Amoxicillin), 3: A (No bleeding), 4: A (Warm salt-water rinses going well)'
     },
     {
       patient: {
@@ -141,7 +165,7 @@ if (process.argv[1] && process.argv[1].endsWith('prepare-report.js')) {
         condition: 'Serious heart issues (Post-Cardiac Event Recovery)',
         nurse: 'Nurse 3'
       },
-      response: '1. Experienced slight chest heaviness and shortness of breath when walking up stairs this morning. 2. Breathlessness eased after sitting. 3. Took morning medicines on time. 4. No dizziness.'
+      response: '1: C (Moderate chest heaviness after stairs), 2: C (Shortness of breath walking around house), 3: A (Took morning cardiac meds), 4: B (Mild ankle puffiness)'
     }
   ];
 

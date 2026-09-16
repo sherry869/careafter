@@ -60,8 +60,8 @@ export default async function handler(req, res) {
       return json(res, 400, { error: 'Patient name, email contact, and diagnosis are required.' });
     }
 
-    let medicines = [];
-    if (body.image) {
+    let medicines = Array.isArray(body.medicines) ? body.medicines : [];
+    if (body.image && medicines.length === 0) {
       const analyzed = await invokeAnalyze(body.image, body.mimeType);
       if (analyzed.status >= 400) {
         return json(res, analyzed.status, {
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
       medicines = Array.isArray(analyzed.data?.medicines) ? analyzed.data.medicines : [];
     }
 
-    const { questions } = await generateCheckinQuestions(diagnosis, risk_factors);
+    const { questions } = await generateCheckinQuestions(diagnosis, risk_factors, medicines);
 
     const { data: patient, error: insertError } = await supabase
       .from('patients')

@@ -27,12 +27,44 @@ export const patientsToSend = [
     email: 'sanahmerlinb.s2029@cs.ajce.in',
     condition: 'Gastric issues (Gastritis & Acid Reflux Monitoring)',
     nurse: 'Nurse 1 (Gastroenterology Unit)',
-    subject: 'CareAfter Clinical Recovery Check-in · Sanah [Action Required]',
+    subject: 'CareAfter Clinical Recovery Check-in · Sanah [Quick MCQ Check-in]',
     questions: [
-      'How are your stomach symptoms, heartburn, or acid reflux today? (Mild / Moderate / Severe / Normal)',
-      'Have you been taking your Pantoprazole (40 mg) and Sucralfate (1 g) as prescribed? (Yes / No)',
-      'Are you experiencing any severe abdominal pain, persistent nausea, or vomiting? (Yes / No)',
-      'Are you able to tolerate light meals and liquids comfortably? (Yes / No)'
+      {
+        text: 'How are your stomach symptoms, heartburn, or acid reflux today?',
+        options: [
+          'A) Normal — No heartburn, stomach comfortable',
+          'B) Mild acidity — Easily managed with water and light food',
+          'C) Moderate burning / indigestion after meals',
+          'D) Severe burning, persistent vomiting, or dark stools'
+        ]
+      },
+      {
+        text: 'Have you been taking your Pantoprazole (40 mg) and Sucralfate (1 g) as prescribed?',
+        options: [
+          'A) Yes, taking both medications on time before meals',
+          'B) Missed one dose today but back on schedule',
+          'C) Experiencing mild stomach cramps after taking them',
+          'D) Stopped taking medications due to side effects'
+        ]
+      },
+      {
+        text: 'Are you experiencing any severe abdominal pain or nausea?',
+        options: [
+          'A) No abdominal pain or nausea',
+          'B) Mild occasional cramp that settles after resting',
+          'C) Moderate upper abdominal discomfort',
+          'D) Severe sharp pain or persistent nausea / vomiting'
+        ]
+      },
+      {
+        text: 'Are you able to tolerate light meals and liquids comfortably?',
+        options: [
+          'A) Eating light meals and drinking fluids easily',
+          'B) Mild bloating after eating but able to finish food',
+          'C) Difficulty eating solids, only taking liquids',
+          'D) Unable to keep any liquids or food down'
+        ]
+      }
     ],
     greeting: 'Hello Sanah, this is your CareAfter recovery check-in from Nurse 1 regarding your gastric issues.'
   },
@@ -41,12 +73,44 @@ export const patientsToSend = [
     email: 'jerryjamesedavazhickal@gmail.com',
     condition: 'Dental issues (Post-Op Surgical Tooth Extraction)',
     nurse: 'Nurse 2 (Oral Surgery Unit)',
-    subject: 'CareAfter Clinical Recovery Check-in · Jerry [Action Required]',
+    subject: 'CareAfter Clinical Recovery Check-in · Jerry [Quick MCQ Check-in]',
     questions: [
-      'How are your gum swelling and pain levels today? (Mild / Moderate / Severe / Normal)',
-      'Have you been taking your Amoxicillin (500 mg) and Ibuprofen (400 mg) as prescribed? (Yes / No)',
-      'Have you noticed any persistent bleeding or unusual discharge from the extraction site? (Yes / No)',
-      'Are you performing warm salt-water rinses and able to consume soft foods? (Yes / No)'
+      {
+        text: 'How are your gum swelling and pain levels today?',
+        options: [
+          'A) Minimal to no pain, swelling noticeably reduced',
+          'B) Mild soreness, well controlled with prescribed pain reliever',
+          'C) Moderate throbbing pain radiating to jaw or ear',
+          'D) Severe unbearable pain, fever, or difficulty swallowing'
+        ]
+      },
+      {
+        text: 'Have you been taking your Amoxicillin (500 mg) and Ibuprofen (400 mg) as prescribed?',
+        options: [
+          'A) Yes, taking full course of antibiotic and pain reliever as directed',
+          'B) Taking pain reliever only when needed, finished antibiotics',
+          'C) Missed doses due to mild stomach upset',
+          'D) Stopped antibiotics completely before finishing the course'
+        ]
+      },
+      {
+        text: 'Have you noticed any persistent bleeding or unusual discharge from the extraction site?',
+        options: [
+          'A) No bleeding, clean blood clot in place',
+          'B) Slight pink tinged saliva when rinsing gently',
+          'C) Steady light oozing requiring fresh gauze',
+          'D) Active continuous bleeding or foul-tasting pus'
+        ]
+      },
+      {
+        text: 'Are you performing warm salt-water rinses and able to consume soft foods?',
+        options: [
+          'A) Doing gentle salt-water rinses and eating soft foods comfortably',
+          'B) Mild stiffness when chewing soft foods',
+          'C) Unable to chew soft foods, drinking fluids only',
+          'D) Cannot open mouth at all (trismus) or severe jaw stiffness'
+        ]
+      }
     ],
     greeting: 'Hello Jerry, this is your CareAfter recovery check-in from Nurse 2 regarding your dental recovery.'
   },
@@ -55,12 +119,44 @@ export const patientsToSend = [
     email: 'niyajimmy2029@cs.ajce.in',
     condition: 'Serious heart issues (Post-Cardiac Event Recovery & Monitoring)',
     nurse: 'Nurse 3 (Cardiology Care Unit)',
-    subject: 'CareAfter Clinical Recovery Check-in · Niya Jimmy [Action Required]',
+    subject: 'CareAfter Clinical Recovery Check-in · Niya Jimmy [Quick MCQ Check-in]',
     questions: [
-      'Are you experiencing any chest heaviness, tightness, or chest pain today? (Yes / No — if yes: Mild / Moderate / Severe)',
-      'Have you had any shortness of breath, especially when resting or walking short distances? (Yes / No)',
-      'Have you taken your Clopidogrel (75 mg), Atorvastatin (40 mg), and Metoprolol (50 mg) today? (Yes / No)',
-      'Have you noticed any dizziness, ankle swelling, or irregular rapid heartbeats? (Yes / No)'
+      {
+        text: 'Are you experiencing any chest heaviness, tightness, or chest pain today?',
+        options: [
+          'A) No chest heaviness, tightness, or pain at all',
+          'B) Mild muscle soreness around chest with movement',
+          'C) Moderate chest heaviness that eases after resting',
+          'D) Severe chest pain radiating to left arm/jaw, sweating, or nausea'
+        ]
+      },
+      {
+        text: 'Have you had any shortness of breath, especially when resting or walking short distances?',
+        options: [
+          'A) Breathing comfortably at rest and with gentle walking',
+          'B) Mild breathlessness after stairs or walking uphill',
+          'C) Shortness of breath during normal flat walking / household tasks',
+          'D) Severe breathlessness while resting or lying flat in bed'
+        ]
+      },
+      {
+        text: 'Have you taken your Clopidogrel (75 mg), Atorvastatin (40 mg), and Metoprolol (50 mg) today?',
+        options: [
+          'A) Yes, all prescribed doses taken on schedule',
+          'B) Delayed by a few hours but taken',
+          'C) Missed a dose due to lightheadedness or fatigue',
+          'D) Stopped heart medications due to confusion or side effects'
+        ]
+      },
+      {
+        text: 'Have you noticed any dizziness, ankle swelling, or irregular rapid heartbeats?',
+        options: [
+          'A) Steady heart rhythm, no dizziness, no swelling',
+          'B) Brief lightheadedness when standing up quickly',
+          'C) Mild new puffiness around ankles or occasional flutter',
+          'D) Racing heart, fainting episode, or rapid weight/fluid gain'
+        ]
+      }
     ],
     greeting: 'Hello Niya Jimmy, this is your CareAfter recovery check-in from Nurse 3 regarding your heart condition.'
   }
@@ -69,11 +165,22 @@ export const patientsToSend = [
 function buildHtmlEmail(p) {
   const questionItems = p.questions
     .map(
-      (q, idx) => `
-      <div style="margin-bottom: 12px; padding: 10px 14px; background: #f8fafc; border-left: 3px solid #0284c7; border-radius: 4px;">
-        <strong style="color: #0f172a; font-size: 14px;">Question ${idx + 1}:</strong>
-        <p style="margin: 4px 0 0 0; color: #334155; font-size: 14px; line-height: 1.4;">${q}</p>
-      </div>`
+      (q, idx) => {
+        const optionsHtml = (q.options || []).map(opt => `
+          <div style="margin: 4px 0; padding: 6px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; color: #1e293b;">
+            ${opt}
+          </div>
+        `).join('');
+
+        return `
+          <div style="margin-bottom: 14px; padding: 12px 14px; background: #f8fafc; border-left: 4px solid #0284c7; border-radius: 6px;">
+            <strong style="color: #0f172a; font-size: 14px;">Question ${idx + 1}: ${q.text}</strong>
+            <div style="margin-top: 8px;">
+              ${optionsHtml}
+            </div>
+          </div>
+        `;
+      }
     )
     .join('');
 
@@ -94,7 +201,7 @@ function buildHtmlEmail(p) {
         </p>
 
         <p style="font-size: 14px; color: #475569; line-height: 1.5;">
-          Please review the following check-in questions and <strong>reply directly to this email</strong> with your responses. Our clinical care team will immediately process your answers and prepare your daily recovery report.
+          Please review the following quick check-in questions and <strong>reply directly to this email</strong> with your choices.
         </p>
 
         <div style="margin: 20px 0;">
@@ -102,9 +209,9 @@ function buildHtmlEmail(p) {
         </div>
 
         <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 18px; margin: 20px 0;">
-          <strong style="color: #1e40af; font-size: 14px;">📝 How to Reply:</strong>
+          <strong style="color: #1e40af; font-size: 14px;">📝 Quick Reply (No long paragraphs needed):</strong>
           <p style="margin: 6px 0 0 0; color: #1e3a8a; font-size: 13px; line-height: 1.4;">
-            Simply hit <strong>Reply</strong> in your email app and write your answers numbered 1 to 4, or describe how you feel in your own words.
+            Simply hit <strong>Reply</strong> and send your chosen letters, e.g.: <strong>1: A, 2: A, 3: B, 4: A</strong>
           </p>
         </div>
 
@@ -127,11 +234,16 @@ export async function sendScheduledCheckins() {
   const results = [];
 
   for (const p of patientsToSend) {
-    const plainTextQuestions = p.questions.map((q, i) => `${i + 1}. ${q}`).join('\n');
+    const plainTextQuestions = p.questions.map((q, i) => {
+      const qText = q.text || q;
+      const opts = (q.options || []).map(o => `   ${o}`).join('\n');
+      return `${i + 1}. ${qText}${opts ? '\n' + opts : ''}`;
+    }).join('\n\n');
+
     const plainTextBody = `${p.greeting}\n\n` +
-      `Please reply directly to this email with your answers to today's recovery questions:\n\n` +
+      `Please review today's quick recovery check-in questions:\n\n` +
       `${plainTextQuestions}\n\n` +
-      `How to reply: Simply reply with your answers (e.g., 1. Normal, 2. Yes, 3. No, 4. Yes) or describe your symptoms.\n\n` +
+      `How to reply: Simply reply with your chosen option letters (e.g., 1: A, 2: A, 3: B, 4: A) or describe how you feel.\n\n` +
       `If you have severe symptoms, please contact emergency medical care immediately.\n\n` +
       `— CareAfter Clinical Team (${p.nurse})`;
 
